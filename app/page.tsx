@@ -25,9 +25,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Бронирование кортов
-          </h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Book&Play</h1>
           <p className="text-white/80">Войдите в свой аккаунт</p>
         </div>
 

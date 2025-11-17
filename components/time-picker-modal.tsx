@@ -1,34 +1,76 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from "react";
 
 interface TimePickerModalProps {
-  open: boolean
-  onClose: () => void
-  selectedTime: string | null
-  onSelectTime: (time: string) => void
+  open: boolean;
+  onClose: () => void;
+  selectedTime: string | null;
+  onSelectTime: (time: string) => void;
 }
 
-export function TimePickerModal({ open, onClose, selectedTime, onSelectTime }: TimePickerModalProps) {
-  const defaultHour = selectedTime ? selectedTime.split(':')[0] : String(new Date().getHours()).padStart(2, '0')
-  const defaultMinute = selectedTime ? selectedTime.split(':')[1] : '00'
-  
-  const [tempHour, setTempHour] = useState(defaultHour)
-  const [tempMinute, setTempMinute] = useState(defaultMinute)
+export function TimePickerModal({
+  open,
+  onClose,
+  selectedTime,
+  onSelectTime,
+}: TimePickerModalProps) {
+  const defaultHour = selectedTime
+    ? selectedTime.split(":")[0]
+    : String(new Date().getHours()).padStart(2, "0");
+  const defaultMinute = selectedTime ? selectedTime.split(":")[1] : "00";
 
-  if (!open) return null
+  const [tempHour, setTempHour] = useState(defaultHour);
+  const [tempMinute, setTempMinute] = useState(defaultMinute);
 
-  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
-  const minutes = ['00', '30']
+  const hourRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const minuteRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+
+  // Block body scroll when modal is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open && hourRefs.current[tempHour]) {
+      hourRefs.current[tempHour]?.scrollIntoView({
+        block: "center",
+        behavior: "smooth",
+      });
+    }
+  }, [open, tempHour]);
+
+  useEffect(() => {
+    if (open && minuteRefs.current[tempMinute]) {
+      minuteRefs.current[tempMinute]?.scrollIntoView({
+        block: "center",
+        behavior: "smooth",
+      });
+    }
+  }, [open, tempMinute]);
+
+  if (!open) return null;
+
+  const hours = Array.from({ length: 24 }, (_, i) =>
+    String(i).padStart(2, "0")
+  );
+  const minutes = ["00", "30"];
 
   const handleConfirm = () => {
-    onSelectTime(`${tempHour}:${tempMinute}`)
-  }
+    onSelectTime(`${tempHour}:${tempMinute}`);
+  };
 
   const handleReset = () => {
-    onSelectTime('')
-    onClose()
-  }
+    onSelectTime("");
+    onClose();
+  };
 
   return (
     <div
@@ -58,21 +100,26 @@ export function TimePickerModal({ open, onClose, selectedTime, onSelectTime }: T
         {/* Time Picker */}
         <div className="px-6 pb-6 flex items-center justify-center gap-4">
           {/* Hours */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-20 max-h-48 overflow-y-auto scrollbar-thin">
-              {hours.map((hour) => (
-                <button
-                  key={hour}
-                  onClick={() => setTempHour(hour)}
-                  className={`w-full py-3 text-center text-xl font-bold rounded-xl transition-all duration-200 ${
-                    tempHour === hour
-                      ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-lg scale-105'
-                      : 'text-gray-700 hover:bg-gray-100 hover:scale-105'
-                  }`}
-                >
-                  {hour}
-                </button>
-              ))}
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-48 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="py-20">
+                {hours.map((hour) => (
+                  <button
+                    key={hour}
+                    ref={(el) => {
+                      hourRefs.current[hour] = el;
+                    }}
+                    onClick={() => setTempHour(hour)}
+                    className={`w-full py-3 text-center text-xl font-bold rounded-xl transition-all duration-200 ${
+                      tempHour === hour
+                        ? "bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-lg scale-105"
+                        : "text-gray-700 hover:bg-gray-100 hover:scale-105"
+                    }`}
+                  >
+                    {hour}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -80,21 +127,26 @@ export function TimePickerModal({ open, onClose, selectedTime, onSelectTime }: T
           <span className="text-gray-900 text-2xl font-bold">:</span>
 
           {/* Minutes */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex flex-col gap-3">
-              {minutes.map((minute) => (
-                <button
-                  key={minute}
-                  onClick={() => setTempMinute(minute)}
-                  className={`w-20 py-3 text-center text-xl font-bold rounded-xl transition-all duration-200 ${
-                    tempMinute === minute
-                      ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-lg scale-105'
-                      : 'text-gray-700 hover:bg-gray-100 hover:scale-105'
-                  }`}
-                >
-                  {minute}
-                </button>
-              ))}
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-48 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="py-20">
+                {minutes.map((minute) => (
+                  <button
+                    key={minute}
+                    ref={(el) => {
+                      minuteRefs.current[minute] = el;
+                    }}
+                    onClick={() => setTempMinute(minute)}
+                    className={`w-full py-3 text-center text-xl font-bold rounded-xl transition-all duration-200 ${
+                      tempMinute === minute
+                        ? "bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-lg scale-105"
+                        : "text-gray-700 hover:bg-gray-100 hover:scale-105"
+                    }`}
+                  >
+                    {minute}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -110,5 +162,5 @@ export function TimePickerModal({ open, onClose, selectedTime, onSelectTime }: T
         </div>
       </div>
     </div>
-  )
+  );
 }

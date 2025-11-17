@@ -11,16 +11,7 @@ import { BookingsSection } from "@/components/bookings-section";
 import { FavoritesSection } from "@/components/favorites-section";
 import { ProfileSection } from "@/components/profile-section";
 
-interface Court {
-  id: string;
-  image: string;
-  name: string;
-  organization: string;
-  address: string;
-  characteristics: string[];
-  priceRange: string;
-  amenities: { type: string; label: string }[];
-}
+import { courts } from "@/data/courts";
 
 function HomePageContent() {
   const router = useRouter();
@@ -58,51 +49,6 @@ function HomePageContent() {
 
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  const courts: Court[] = [
-    {
-      id: "1",
-      image: "/outdoor-tennis-court.png",
-      name: "Корт №1",
-      organization: "Теннисный клуб «Премьер»",
-      address: "ул. Спортивная, 12",
-      characteristics: ["Хард", "Открытый", "Теннис"],
-      priceRange: "1500–2500 ₽ / час",
-      amenities: [
-        { type: "wifi", label: "Wi-Fi" },
-        { type: "shower", label: "Душ" },
-        { type: "parking", label: "Парковка" },
-      ],
-    },
-    {
-      id: "2",
-      image: "/indoor-tennis-court.png",
-      name: "Корт №3",
-      organization: "Спортивный центр «Арена»",
-      address: "пр. Ленина, 45",
-      characteristics: ["Грунт", "Закрытый", "Теннис"],
-      priceRange: "2000–3000 ₽ / час",
-      amenities: [
-        { type: "wifi", label: "Wi-Fi" },
-        { type: "shower", label: "Душ" },
-        { type: "locker", label: "Раздевалка" },
-      ],
-    },
-    {
-      id: "3",
-      image: "/tennis-court-grass.jpg",
-      name: "Корт №5",
-      organization: "Клуб «Зеленая лужайка»",
-      address: "ул. Парковая, 8",
-      characteristics: ["Трава", "Открытый", "Падел"],
-      priceRange: "1800–2500 ₽ / час",
-      amenities: [
-        { type: "cafe", label: "Кафе" },
-        { type: "parking", label: "Парковка" },
-        { type: "shower", label: "Душ" },
-      ],
-    },
-  ];
-
   const toggleFavorite = (courtId: string) => {
     setFavorites((prev) =>
       prev.includes(courtId)
@@ -114,24 +60,26 @@ function HomePageContent() {
   const favoriteCourts = courts.filter((court) => favorites.includes(court.id));
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-16">
-      {/* Header */}
-      <header className="bg-secondary text-white px-4 py-4"></header>
+    <div className="min-h-screen bg-background">
+      {/* Header - Fixed */}
+      <header className="fixed top-0 left-0 right-0 z-20 bg-secondary text-white px-4 h-14 flex items-center"></header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="pt-14 pb-16">
         {activeTab === "search" && (
           <div>
-            {/* Horizontal Filters */}
-            <HorizontalFilters
-              selectedDate={selectedDate}
-              selectedTime={selectedTime}
-              onDateClick={() => setShowDatePicker(true)}
-              onTimeClick={() => setShowTimePicker(true)}
-            />
+            {/* Horizontal Filters - Fixed */}
+            <div className="fixed top-14 left-0 right-0 z-10 bg-background">
+              <HorizontalFilters
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                onDateClick={() => setShowDatePicker(true)}
+                onTimeClick={() => setShowTimePicker(true)}
+              />
+            </div>
 
             {/* Court Cards */}
-            <div className="px-4 space-y-3 pb-4">
+            <div className="px-4 space-y-3 pb-4 pt-[100px]">
               {courts.map((court) => (
                 <CourtCard
                   key={court.id}

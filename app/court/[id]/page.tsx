@@ -19,88 +19,30 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { DatePickerModal } from "@/components/date-picker-modal";
 
+import { courts } from "@/data/courts";
+
 interface CourtDetailsProps {
   params: Promise<{
     id: string;
   }>;
 }
 
-// Mock data - replace with actual data fetching
-const courtData = {
-  id: "1",
-  name: "Корт №1",
-  organization: "Теннисный клуб «Премьер»",
-  image: "/outdoor-tennis-court.png",
-  description:
-    "Профессиональный теннисный корт с покрытием хард. Идеально подходит для тренировок и турниров любого уровня. Корт оборудован современным освещением для игры в вечернее время.",
-  address: "ул. Спортивная, 12",
-  characteristics: ["Хард", "Открытый", "Теннис"],
-  amenities: [
-    { type: "wifi", label: "Wi-Fi" },
-    { type: "shower", label: "Душ" },
-    { type: "parking", label: "Парковка" },
-    { type: "locker", label: "Раздевалка" },
-    { type: "cafe", label: "Кафе" },
-  ],
-  schedule: {
-    workingHours: "Пн-Вс: 08:00–22:00",
-    tariffs: [
-      {
-        id: 1,
-        name: "Абонемент",
-        badgeColor: "bg-emerald-100 text-emerald-700",
-        icon: "📄",
-        timeSlots: [
-          { time: "08:00–16:00", days: "пн–пт", price: 1700 },
-          { time: "16:00–21:00", days: "пн–пт", price: 2000 },
-          { time: "21:00–23:00", days: "пн–пт", price: 1700 },
-          { time: "08:00–23:00", days: "сб–вс", price: 1700 },
-        ],
-      },
-      {
-        id: 2,
-        name: "Разовое посещение",
-        badgeColor: "bg-teal-100 text-teal-700",
-        icon: "🎯",
-        timeSlots: [
-          { time: "08:00–16:00", days: "пн–пт", price: 1800 },
-          { time: "16:00–21:00", days: "пн–пт", price: 2100 },
-          { time: "08:00–23:00", days: "сб–вс", price: 1800 },
-        ],
-      },
-      {
-        id: 3,
-        name: "Студенческий",
-        icon: "🎓",
-        timeSlots: [{ time: "08:00–23:00", days: "пн–вс", price: 1500 }],
-      },
-    ],
-    services: [
-      { name: "Аренда ракеток", price: 300 },
-      { name: "Аренда мячей", price: 150 },
-    ],
-  },
-  contacts: {
-    phone: "+7 (912) 345-67-89",
-    email: "premier@tennis.ru",
-  },
-  slots: [
-    { time: "08:00–10:00", price: 1500, available: true },
-    { time: "10:00–12:00", price: 1500, available: true },
-    { time: "12:00–14:00", price: 2000, available: false },
-    { time: "14:00–16:00", price: 2000, available: true },
-    { time: "16:00–18:00", price: 2000, available: true },
-    { time: "18:00–20:00", price: 2500, available: true },
-    { time: "20:00–22:00", price: 2500, available: false },
-  ],
-};
-
 export default function CourtDetailPage({ params }: CourtDetailsProps) {
   const resolvedParams = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get("tab") as "info" | "schedule" | null;
-  
+
+  const courtData = courts.find((court) => court.id === resolvedParams.id);
+
+  if (!courtData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Корт не найден</p>
+      </div>
+    );
+  }
+
   const [activeTab, setActiveTab] = useState<"info" | "schedule">(
     tabFromUrl || "info"
   );
@@ -156,7 +98,8 @@ export default function CourtDetailPage({ params }: CourtDetailsProps) {
     }
   };
 
-  const availableSlots = courtData.slots.filter((slot) => slot.available);
+  const availableSlots =
+    courtData.slots?.filter((slot) => slot.available) || [];
 
   const groupedSlots = availableSlots.reduce((acc, slot) => {
     if (acc.length === 0) {
@@ -317,122 +260,131 @@ export default function CourtDetailPage({ params }: CourtDetailsProps) {
             </div>
 
             {/* Schedule and Rates */}
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-2">
-                Расписание работы
-              </h2>
-              <div className="flex items-start gap-2 mb-2">
-                <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
-                <p className="text-foreground">
-                  {courtData.schedule.workingHours}
-                </p>
-              </div>
-            </div>
+            {courtData.schedule && (
+              <>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground mb-2">
+                    Расписание работы
+                  </h2>
+                  <div className="flex items-start gap-2 mb-2">
+                    <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <p className="text-foreground">
+                      {courtData.schedule.workingHours}
+                    </p>
+                  </div>
+                </div>
 
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-3">
-                Тарифы
-              </h2>
-              <div className="space-y-4">
-                {courtData.schedule.tariffs.map((tariff) => (
-                  <div
-                    key={tariff.id}
-                    className="bg-card border border-border rounded-2xl p-4"
-                  >
-                    {/* Tariff Header */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-xl">
-                        {tariff.icon}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">
-                          {tariff.name}
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Time Slots */}
-                    <div className="space-y-3">
-                      {tariff.timeSlots.map((slot, index) => (
-                        <div key={index} className="flex items-center gap-4">
-                          {/* Time */}
-                          <div className="flex items-center gap-2 flex-1">
-                            <Clock className="w-4 h-4 text-muted-foreground" />
-                            <div>
-                              <p className={`font-medium text-foreground`}>
-                                {slot.time}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {slot.days}
-                              </p>
-                            </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground mb-3">
+                    Тарифы
+                  </h2>
+                  <div className="space-y-4">
+                    {courtData.schedule.tariffs.map((tariff) => (
+                      <div
+                        key={tariff.id}
+                        className="bg-card border border-border rounded-2xl p-4"
+                      >
+                        {/* Tariff Header */}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-xl">
+                            {tariff.icon}
                           </div>
-
-                          {/* Price */}
-                          <div className="flex items-center gap-2">
-                            <Tag className="w-4 h-4 text-muted-foreground" />
-                            <p className={`font-semibold text-foreground`}>
-                              {slot.price} ₽ / час
-                            </p>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-foreground">
+                              {tariff.name}
+                            </h3>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Services */}
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-3">
-                Услуги
-              </h2>
-              <div className="space-y-2">
-                {courtData.schedule.services.map((service, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between py-2"
-                  >
-                    <span className="text-foreground">{service.name}</span>
-                    <span className="font-semibold text-foreground">
-                      {service.price} ₽ / час
-                    </span>
+                        {/* Time Slots */}
+                        <div className="space-y-3">
+                          {tariff.timeSlots.map((slot, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-4"
+                            >
+                              {/* Time */}
+                              <div className="flex items-center gap-2 flex-1">
+                                <Clock className="w-4 h-4 text-muted-foreground" />
+                                <div>
+                                  <p className={`font-medium text-foreground`}>
+                                    {slot.time}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {slot.days}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Price */}
+                              <div className="flex items-center gap-2">
+                                <Tag className="w-4 h-4 text-muted-foreground" />
+                                <p className={`font-semibold text-foreground`}>
+                                  {slot.price} ₽ / час
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+
+                {/* Services */}
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground mb-3">
+                    Услуги
+                  </h2>
+                  <div className="space-y-2">
+                    {courtData.schedule.services.map((service, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between py-2"
+                      >
+                        <span className="text-foreground">{service.name}</span>
+                        <span className="font-semibold text-foreground">
+                          {service.price} ₽ / час
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Contacts */}
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-3">
-                Контакты
-              </h2>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-foreground">
-                  <Phone className="w-5 h-5 text-accent" />
-                  <a
-                    href={`tel:${courtData.contacts.phone}`}
-                    className="hover:text-accent"
-                  >
-                    {courtData.contacts.phone}
-                  </a>
-                </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <Mail className="w-5 h-5 text-accent" />
-                  <a
-                    href={`mailto:${courtData.contacts.email}`}
-                    className="hover:text-accent"
-                  >
-                    {courtData.contacts.email}
-                  </a>
-                </div>
-                <div className="flex items-start gap-2 text-foreground">
-                  <MapPin className="w-5 h-5 text-accent mt-0.5" />
-                  <p>{courtData.address}</p>
+            {courtData.contacts && (
+              <div>
+                <h2 className="text-lg font-semibold text-foreground mb-3">
+                  Контакты
+                </h2>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-foreground">
+                    <Phone className="w-5 h-5 text-accent" />
+                    <a
+                      href={`tel:${courtData.contacts.phone}`}
+                      className="hover:text-accent"
+                    >
+                      {courtData.contacts.phone}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2 text-foreground">
+                    <Mail className="w-5 h-5 text-accent" />
+                    <a
+                      href={`mailto:${courtData.contacts.email}`}
+                      className="hover:text-accent"
+                    >
+                      {courtData.contacts.email}
+                    </a>
+                  </div>
+                  <div className="flex items-start gap-2 text-foreground">
+                    <MapPin className="w-5 h-5 text-accent mt-0.5" />
+                    <p>{courtData.address}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

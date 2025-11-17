@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
+import { avaiOrganizations } from "@/data/organizations";
 interface FilterModalProps {
   open: boolean;
   onClose: () => void;
@@ -15,7 +16,6 @@ interface FilterModalProps {
   onSurfaceChange: (value: string[]) => void;
   onSportChange: (value: string[]) => void;
   onOrganizationsChange: (value: string[]) => void;
-  onNearestAvailableChange: (value: boolean) => void;
 }
 
 export function FilterModal({
@@ -25,12 +25,10 @@ export function FilterModal({
   surface,
   sport,
   organizations,
-  nearestAvailable,
   onCourtTypeChange,
   onSurfaceChange,
   onSportChange,
   onOrganizationsChange,
-  onNearestAvailableChange,
 }: FilterModalProps) {
   const [isOrganizationsExpanded, setIsOrganizationsExpanded] = useState(false);
 
@@ -53,17 +51,8 @@ export function FilterModal({
     onSurfaceChange([]);
     onSportChange([]);
     onOrganizationsChange([]);
-    onNearestAvailableChange(false);
     onClose();
   };
-
-  const availableOrganizations = [
-    "Теннисный клуб «Премьер»",
-    "Спортивный центр «Арена»",
-    "Клуб «Зеленая лужайка»",
-    "Спорткомплекс «Олимп»",
-    "Теннис-центр «Чемпион»",
-  ];
 
   return (
     <div
@@ -182,7 +171,7 @@ export function FilterModal({
                   : "max-h-0 opacity-0"
               }`}
             >
-              {availableOrganizations.map((org) => (
+              {avaiOrganizations.map((org) => (
                 <label
                   key={org}
                   className="flex items-center gap-3 cursor-pointer py-2 hover:bg-gray-50 rounded-lg px-2 transition-colors"
@@ -205,21 +194,6 @@ export function FilterModal({
                 </label>
               ))}
             </div>
-          </div>
-
-          {/* Nearest Available */}
-          <div>
-            <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
-              <input
-                type="checkbox"
-                checked={nearestAvailable}
-                onChange={(e) => onNearestAvailableChange(e.target.checked)}
-                className="w-5 h-5 rounded border-2 border-gray-300 bg-white checked:bg-emerald-600 checked:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-0 transition-all"
-              />
-              <span className="text-gray-900 text-base font-semibold">
-                Ближайшие свободные
-              </span>
-            </label>
           </div>
         </div>
 

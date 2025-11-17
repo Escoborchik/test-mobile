@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { FilterModal } from "@/components/filter-modal";
 
 interface HorizontalFiltersProps {
@@ -23,6 +23,7 @@ export function HorizontalFilters({
   const [sport, setSport] = useState<string[]>([]);
   const [organizations, setOrganizations] = useState<string[]>([]);
   const [nearestAvailable, setNearestAvailable] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
 
   const formatDate = (date: Date) => {
     const today = new Date();
@@ -46,7 +47,6 @@ export function HorizontalFilters({
     if (surface.length > 0) count++;
     if (sport.length > 0) count++;
     if (organizations.length > 0) count++;
-    if (nearestAvailable) count++;
     return count;
   };
 
@@ -54,8 +54,26 @@ export function HorizontalFilters({
 
   return (
     <>
-      <div className="px-4 py-4 overflow-x-auto">
-        <div className="flex items-center gap-2 min-w-max">
+      <div className="px-4 py-3 bg-background border-b border-border space-y-2">
+        {/* First Row - Quick Filters (always green, smaller) */}
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <button
+            onClick={() => setNearestAvailable(!nearestAvailable)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-700 text-white text-xs font-semibold whitespace-nowrap hover:bg-emerald-800 hover:shadow-lg transition-all duration-200 shadow-sm"
+          >
+            <span>{nearestAvailable && "✓ "}Ближайшие</span>
+          </button>
+
+          <button
+            onClick={() => setHasSubscription(!hasSubscription)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-700 text-white text-xs font-semibold whitespace-nowrap hover:bg-emerald-800 hover:shadow-lg transition-all duration-200 shadow-sm"
+          >
+            <span>{hasSubscription && "✓ "}Абонемент</span>
+          </button>
+        </div>
+
+        {/* Second Row - Date, Time, Filters */}
+        <div className="flex items-center gap-2 overflow-x-auto">
           <button
             onClick={onDateClick}
             className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-700 text-white text-sm font-semibold whitespace-nowrap hover:bg-emerald-800 hover:shadow-lg transition-all duration-200 shadow-md"
@@ -74,15 +92,14 @@ export function HorizontalFilters({
 
           <button
             onClick={() => setShowFiltersModal(true)}
-            className="flex gap-2 px-6 py-3 rounded-full bg-emerald-700 text-white text-sm font-semibold whitespace-nowrap hover:bg-emerald-800 hover:shadow-lg transition-all duration-200 shadow-md flex-row items-center justify-start"
+            className="relative flex gap-2 px-6 py-3 rounded-full bg-emerald-700 text-white text-sm font-semibold whitespace-nowrap hover:bg-emerald-800 hover:shadow-lg transition-all duration-200 shadow-md flex-row items-center justify-center"
           >
-            <span>Фильтры</span>
+            <SlidersHorizontal className="w-4 h-4" />
             {activeFiltersCount > 0 && (
-              <span className="bg-white text-emerald-700 text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+              <span className="absolute -top-1 -right-1 bg-white text-emerald-700 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
                 {activeFiltersCount}
               </span>
             )}
-            <ChevronDown className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -99,7 +116,6 @@ export function HorizontalFilters({
         onSurfaceChange={setSurface}
         onSportChange={setSport}
         onOrganizationsChange={setOrganizations}
-        onNearestAvailableChange={setNearestAvailable}
       />
     </>
   );

@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { CheckCircle2, Calendar, Clock } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { CheckCircle2, Calendar, Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function BookingConfirmationPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
@@ -16,7 +16,9 @@ export default function BookingConfirmationPage() {
 
         {/* Success Message */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Бронирование подтверждено!</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Бронирование подтверждено!
+          </h1>
           <p className="text-muted-foreground">
             Спасибо за бронирование. Детали отправлены на вашу почту.
           </p>
@@ -43,13 +45,7 @@ export default function BookingConfirmationPage() {
         {/* Actions */}
         <div className="space-y-3">
           <button
-            onClick={() => router.push('/')}
-            className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Вернуться на главную
-          </button>
-          <button
-            onClick={() => router.push('/?tab=bookings')}
+            onClick={() => router.push("/clinet?tab=bookings")}
             className="w-full h-12 rounded-xl border border-border text-foreground font-semibold hover:bg-muted transition-colors"
           >
             Мои бронирования
@@ -57,5 +53,5 @@ export default function BookingConfirmationPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

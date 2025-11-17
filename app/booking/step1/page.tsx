@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { TimePickerModal } from "@/components/time-picker-modal";
 import { DatePickerModal } from "@/components/date-picker-modal";
+import { courts } from "@/data/courts";
+import { weekdays } from "@/data/weekdays";
 
 function BookingStep1Content() {
   const router = useRouter();
@@ -15,6 +17,17 @@ function BookingStep1Content() {
   const dateStr = searchParams.get("date");
   const initialDate = dateStr ? new Date(dateStr) : new Date();
 
+  // Get court data
+  const courtData = courts.find((court) => court.id === courtId);
+
+  if (!courtData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Корт не найден</p>
+      </div>
+    );
+  }
+
   const [startTime, setStartTime] = useState<string | null>(
     slot ? slot.split("–")[0] : null
   );
@@ -23,7 +36,9 @@ function BookingStep1Content() {
   );
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-  const [isSubscription, setIsSubscription] = useState(false);
+  const [selectedTariff, setSelectedTariff] = useState<number | null>(
+    courtData.schedule?.tariffs[0]?.id || null
+  );
   const [startDate, setStartDate] = useState(initialDate);
   const [endDate, setEndDate] = useState(
     new Date(initialDate.getTime() + 30 * 24 * 60 * 60 * 1000)
@@ -31,6 +46,8 @@ function BookingStep1Content() {
   const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([1, 3, 5]); // Пн, Ср, Пт
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [showTariffDropdown, setShowTariffDropdown] = useState(false);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("ru-RU", {
@@ -47,20 +64,32 @@ function BookingStep1Content() {
     });
   };
 
-  const weekdays = [
-    { id: 1, short: "Пн", full: "Понедельник" },
-    { id: 2, short: "Вт", full: "Вторник" },
-    { id: 3, short: "Ср", full: "Среда" },
-    { id: 4, short: "Чт", full: "Четверг" },
-    { id: 5, short: "Пт", full: "Пятница" },
-    { id: 6, short: "Сб", full: "Суббота" },
-    { id: 0, short: "Вс", full: "Воскресенье" },
-  ];
-
   const toggleWeekday = (dayId: number) => {
     setSelectedWeekdays((prev) =>
       prev.includes(dayId) ? prev.filter((d) => d !== dayId) : [...prev, dayId]
     );
+  };
+
+  const selectedTariffData = courtData.schedule?.tariffs.find(
+    (t) => t.id === selectedTariff
+  );
+  const isSubscription = selectedTariffData?.name === "Абонемент";
+
+  const toggleService = (serviceName: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(serviceName)
+        ? prev.filter((s) => s !== serviceName)
+        : [...prev, serviceName]
+    );
+  };
+
+  const calculateDuration = () => {
+    if (!startTime || !endTime) return 0;
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+    return (endMinutes - startMinutes) / 60; // hours
   };
 
   const calculateSessions = () => {
@@ -80,19 +109,28 @@ function BookingStep1Content() {
     return count;
   };
 
-  const calculateTotalCost = () => {
-    const sessions = calculateSessions();
-    const pricePerSession = 2000;
-    return sessions * pricePerSession;
+  const calculateSessionPrice = () => {
+    const duration = calculateDuration();
+    const pricePerHour = selectedTariffData?.timeSlots[0]?.price || 0;
+    return duration * pricePerHour;
   };
 
-  // Mock court data
-  const courtData = {
-    name: "Корт №1",
-    organization: "Теннисный клуб «Премьер»",
-    characteristics: ["Хард", "Открытый", "Теннис"],
-    address: "ул. Спортивная, 12",
-    image: "/outdoor-tennis-court.png",
+  const calculateTotalCost = () => {
+    const sessions = calculateSessions();
+    const sessionPrice = calculateSessionPrice();
+
+    // Calculate court cost
+    const courtCost = sessions * sessionPrice;
+
+    // Calculate services cost
+    const servicesCost = selectedServices.reduce((total, serviceName) => {
+      const service = courtData.schedule?.services.find(
+        (s) => s.name === serviceName
+      );
+      return total + (service?.price || 0) * sessions * calculateDuration();
+    }, 0);
+
+    return courtCost + servicesCost;
   };
 
   return (
@@ -135,11 +173,6 @@ function BookingStep1Content() {
       <div className="px-4 py-6 pb-24 space-y-6">
         {/* Court Info */}
         <div className="bg-card rounded-xl overflow-hidden border border-border">
-          <img
-            src={courtData.image || "/placeholder.svg"}
-            alt={courtData.name}
-            className="w-full h-40 object-cover"
-          />
           <div className="p-4">
             <h2 className="text-lg font-semibold text-foreground">
               {courtData.name}
@@ -156,29 +189,59 @@ function BookingStep1Content() {
           </div>
         </div>
 
-        {/* Subscription Toggle */}
-        <div className="bg-card rounded-xl p-4 border border-border">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-foreground">Абонемент</h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Забронировать на несколько дней
-              </p>
+        {/* Tariff Selection */}
+        {courtData.schedule && courtData.schedule.tariffs.length > 0 && (
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <h3 className="font-semibold text-foreground mb-3">Тариф</h3>
+            <div className="relative">
+              <button
+                onClick={() => setShowTariffDropdown(!showTariffDropdown)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <span className="text-foreground font-medium">
+                  {selectedTariffData?.name || "Выберите тариф"}
+                </span>
+                <svg
+                  className={`w-5 h-5 text-gray-600 transition-transform ${
+                    showTariffDropdown ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {showTariffDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-border z-10">
+                  {courtData.schedule.tariffs.map((tariff) => (
+                    <button
+                      key={tariff.id}
+                      onClick={() => {
+                        setSelectedTariff(tariff.id);
+                        setShowTariffDropdown(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      <p className="font-medium text-foreground">
+                        {tariff.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        от {tariff.timeSlots[0].price} ₽/час
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <button
-              onClick={() => setIsSubscription(!isSubscription)}
-              className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${
-                isSubscription ? "bg-emerald-600" : "bg-gray-300"
-              }`}
-            >
-              <div
-                className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-transform duration-200 ${
-                  isSubscription ? "translate-x-7" : "translate-x-0"
-                }`}
-              />
-            </button>
           </div>
-        </div>
+        )}
 
         {/* Booking Details */}
         <div className="bg-card rounded-xl p-4 border border-border space-y-4">
@@ -303,6 +366,23 @@ function BookingStep1Content() {
 
           {/* Summary */}
           <div className="pt-3 border-t border-border space-y-2">
+            {calculateSessionPrice() > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Цена за занятие:</span>
+                <span className="text-foreground font-semibold">
+                  {calculateSessionPrice().toLocaleString()} ₽
+                </span>
+              </div>
+            )}
+            {calculateDuration() > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Длительность:</span>
+                <span className="text-foreground font-semibold">
+                  {calculateDuration()}{" "}
+                  {calculateDuration() === 1 ? "час" : "часа"}
+                </span>
+              </div>
+            )}
             {isSubscription && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
@@ -313,12 +393,72 @@ function BookingStep1Content() {
                 </span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Итого:</span>
-              <span className="text-xl font-bold text-emerald-600">
-                {calculateTotalCost().toLocaleString()} ₽
-              </span>
+          </div>
+        </div>
+
+        {/* Services */}
+        {courtData.schedule && courtData.schedule.services.length > 0 && (
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <h3 className="font-semibold text-foreground mb-3">
+              Дополнительные услуги
+            </h3>
+            <div className="space-y-2">
+              {courtData.schedule.services.map((service) => (
+                <button
+                  key={service.name}
+                  onClick={() => toggleService(service.name)}
+                  className={`w-full p-3 rounded-lg border-2 transition-all ${
+                    selectedServices.includes(service.name)
+                      ? "border-emerald-600 bg-emerald-50"
+                      : "border-gray-200 bg-white hover:border-emerald-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-foreground flex-1 text-left">
+                      {service.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground whitespace-nowrap">
+                      {service.price} ₽/час
+                    </p>
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                        selectedServices.includes(service.name)
+                          ? "border-emerald-600 bg-emerald-600"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedServices.includes(service.name) && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
+          </div>
+        )}
+
+        {/* Total Cost */}
+        <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-semibold text-foreground">
+              Итого:
+            </span>
+            <span className="text-2xl font-bold text-emerald-600">
+              {calculateTotalCost().toLocaleString()} ₽
+            </span>
           </div>
         </div>
       </div>
@@ -326,7 +466,39 @@ function BookingStep1Content() {
       {/* Continue Button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border">
         <button
-          onClick={() => router.push("/booking/step2")}
+          onClick={() => {
+            // Save booking data to localStorage
+            const bookingData = {
+              courtId,
+              courtName: courtData.name,
+              courtOrganization: courtData.organization,
+              tariffName: selectedTariffData?.name,
+              startTime,
+              endTime,
+              duration: calculateDuration(),
+              isSubscription,
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+              selectedWeekdays,
+              sessions: calculateSessions(),
+              sessionPrice: calculateSessionPrice(),
+              selectedServices,
+              servicesCost: selectedServices.reduce((total, serviceName) => {
+                const service = courtData.schedule?.services.find(
+                  (s) => s.name === serviceName
+                );
+                return (
+                  total +
+                  (service?.price || 0) *
+                    calculateSessions() *
+                    calculateDuration()
+                );
+              }, 0),
+              totalCost: calculateTotalCost(),
+            };
+            localStorage.setItem("bookingData", JSON.stringify(bookingData));
+            router.push("/booking/step2");
+          }}
           disabled={!startTime || !endTime}
           className={`w-full h-12 rounded-xl font-semibold transition-all ${
             startTime && endTime
