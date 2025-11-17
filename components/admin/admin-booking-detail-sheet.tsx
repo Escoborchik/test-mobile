@@ -1,39 +1,39 @@
-'use client'
+"use client";
 
-import { X, User, MapPin, Calendar, Phone, Mail } from 'lucide-react'
-import { useState } from 'react'
+import { X, User, MapPin, Calendar, Phone, Mail } from "lucide-react";
+import { useState } from "react";
 
 interface Booking {
-  id: string
-  clientName: string
-  clientPhone: string
-  clientEmail: string
-  courtName: string
-  courtType: string
-  courtSurface: string
-  sport: string
-  isIndoor: boolean
-  address: string
-  date: string
-  time: string
-  price: number
-  status: 'pending' | 'confirmed'
-  isRecurring: boolean
+  id: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail: string;
+  courtName: string;
+  courtType: string;
+  courtSurface: string;
+  sport: string;
+  isIndoor: boolean;
+  address: string;
+  date: string;
+  time: string;
+  price: number;
+  status: "pending" | "confirmed";
+  isRecurring: boolean;
   recurringDetails?: {
-    startDate: string
-    endDate: string
-    daysOfWeek: string[]
-    totalSessions: number
-    remainingSessions: number
-    totalAmount: number
-  }
+    startDate: string;
+    endDate: string;
+    daysOfWeek: string[];
+    totalSessions: number;
+    remainingSessions: number;
+    totalAmount: number;
+  };
 }
 
 interface AdminBookingDetailSheetProps {
-  booking: Booking
-  onClose: () => void
-  onConfirm: (id: string) => void
-  onReject: (id: string) => void
+  booking: Booking;
+  onClose: () => void;
+  onConfirm: (id: string) => void;
+  onReject: (id: string) => void;
 }
 
 export function AdminBookingDetailSheet({
@@ -42,18 +42,32 @@ export function AdminBookingDetailSheet({
   onConfirm,
   onReject,
 }: AdminBookingDetailSheetProps) {
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const [actionType, setActionType] = useState<'confirm' | 'reject'>('confirm')
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [actionType, setActionType] = useState<"confirm" | "reject">("confirm");
+
+  // Функция для преобразования дней недели в укороченный вид
+  const formatWeekDays = (days: string[]): string => {
+    const shortDays: Record<string, string> = {
+      Понедельник: "Пн",
+      Вторник: "Вт",
+      Среда: "Ср",
+      Четверг: "Чт",
+      Пятница: "Пт",
+      Суббота: "Сб",
+      Воскресенье: "Вс",
+    };
+    return days.map((day) => shortDays[day] || day).join(", ");
+  };
 
   const handleAction = () => {
-    if (actionType === 'confirm') {
-      onConfirm(booking.id)
+    if (actionType === "confirm") {
+      onConfirm(booking.id);
     } else {
-      onReject(booking.id)
+      onReject(booking.id);
     }
-    setShowConfirmDialog(false)
-    onClose()
-  }
+    setShowConfirmDialog(false);
+    onClose();
+  };
 
   return (
     <>
@@ -66,14 +80,19 @@ export function AdminBookingDetailSheet({
         <div className="sticky top-0 bg-card border-b border-border px-4 py-4 flex items-center justify-between rounded-t-3xl">
           <div
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              booking.status === 'pending'
-                ? 'bg-warning/20 text-warning'
-                : 'bg-success/20 text-success'
+              booking.status === "pending"
+                ? "bg-warning/20 text-warning"
+                : "bg-success/20 text-success"
             }`}
           >
-            {booking.status === 'pending' ? 'Ожидает подтверждения' : 'Подтверждено'}
+            {booking.status === "pending"
+              ? "Ожидает подтверждения"
+              : "Подтверждено"}
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -91,13 +110,19 @@ export function AdminBookingDetailSheet({
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-muted-foreground" />
-                <a href={`tel:${booking.clientPhone}`} className="text-primary hover:underline">
+                <a
+                  href={`tel:${booking.clientPhone}`}
+                  className="text-primary hover:underline"
+                >
                   {booking.clientPhone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-muted-foreground" />
-                <a href={`mailto:${booking.clientEmail}`} className="text-primary hover:underline">
+                <a
+                  href={`mailto:${booking.clientEmail}`}
+                  className="text-primary hover:underline"
+                >
                   {booking.clientEmail}
                 </a>
               </div>
@@ -135,35 +160,44 @@ export function AdminBookingDetailSheet({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Цена</span>
-                <span className="font-semibold text-accent">{booking.price} ₽</span>
+                <span className="font-semibold text-accent">
+                  {booking.price} ₽
+                </span>
               </div>
 
               {booking.isRecurring && booking.recurringDetails && (
                 <>
                   <div className="border-t border-border my-2 pt-2">
-                    <p className="text-sm font-medium mb-2">Повторяющееся бронирование</p>
+                    <p className="text-sm font-medium mb-2">Абонемент</p>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Период</span>
                     <span>
-                      {booking.recurringDetails.startDate} – {booking.recurringDetails.endDate}
+                      {booking.recurringDetails.startDate} –{" "}
+                      {booking.recurringDetails.endDate}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Дни недели</span>
-                    <span>{booking.recurringDetails.daysOfWeek.join(', ')}</span>
+                    <span>
+                      {formatWeekDays(booking.recurringDetails.daysOfWeek)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Всего занятий</span>
                     <span>{booking.recurringDetails.totalSessions}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Осталось занятий</span>
+                    <span className="text-muted-foreground">
+                      Осталось занятий
+                    </span>
                     <span>{booking.recurringDetails.remainingSessions}</span>
                   </div>
                   <div className="flex justify-between font-semibold">
                     <span>Итоговая сумма</span>
-                    <span className="text-accent">{booking.recurringDetails.totalAmount} ₽</span>
+                    <span className="text-accent">
+                      {booking.recurringDetails.totalAmount} ₽
+                    </span>
                   </div>
                 </>
               )}
@@ -172,12 +206,12 @@ export function AdminBookingDetailSheet({
         </div>
 
         {/* Actions */}
-        {booking.status === 'pending' && (
+        {booking.status === "pending" && (
           <div className="sticky bottom-0 bg-card border-t border-border p-4 flex gap-3">
             <button
               onClick={() => {
-                setActionType('confirm')
-                setShowConfirmDialog(true)
+                setActionType("confirm");
+                setShowConfirmDialog(true);
               }}
               className="flex-1 bg-success text-success-foreground py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
             >
@@ -185,8 +219,8 @@ export function AdminBookingDetailSheet({
             </button>
             <button
               onClick={() => {
-                setActionType('reject')
-                setShowConfirmDialog(true)
+                setActionType("reject");
+                setShowConfirmDialog(true);
               }}
               className="flex-1 bg-destructive text-destructive-foreground py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
             >
@@ -199,11 +233,15 @@ export function AdminBookingDetailSheet({
       {/* Confirmation Dialog */}
       {showConfirmDialog && (
         <>
-          <div className="fixed inset-0 bg-black/70 z-[60]" onClick={() => setShowConfirmDialog(false)} />
+          <div
+            className="fixed inset-0 bg-black/70 z-[60]"
+            onClick={() => setShowConfirmDialog(false)}
+          />
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] bg-card rounded-2xl p-6 w-[90%] max-w-sm">
             <h3 className="text-lg font-semibold mb-2">Подтверждение</h3>
             <p className="text-muted-foreground mb-6">
-              Вы уверены, что хотите {actionType === 'confirm' ? 'подтвердить' : 'отклонить'} бронь?
+              Вы уверены, что хотите{" "}
+              {actionType === "confirm" ? "подтвердить" : "отклонить"} бронь?
             </p>
             <div className="flex gap-3">
               <button
@@ -215,17 +253,17 @@ export function AdminBookingDetailSheet({
               <button
                 onClick={handleAction}
                 className={`flex-1 py-2 rounded-lg font-medium hover:opacity-90 ${
-                  actionType === 'confirm'
-                    ? 'bg-success text-success-foreground'
-                    : 'bg-destructive text-destructive-foreground'
+                  actionType === "confirm"
+                    ? "bg-success text-success-foreground"
+                    : "bg-destructive text-destructive-foreground"
                 }`}
               >
-                Да, {actionType === 'confirm' ? 'подтвердить' : 'отклонить'}
+                Да, {actionType === "confirm" ? "подтвердить" : "отклонить"}
               </button>
             </div>
           </div>
         </>
       )}
     </>
-  )
+  );
 }

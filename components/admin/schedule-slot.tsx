@@ -1,63 +1,80 @@
 interface TimeSlot {
-  id: string
-  startTime: string
-  endTime: string
-  status: 'available' | 'booked' | 'pending' | 'awaiting-payment'
-  clientName?: string
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: "available" | "booked" | "pending" | "awaiting-payment";
+  clientName?: string;
 }
 
 interface ScheduleSlotProps {
-  slot: TimeSlot
-  onClick: () => void
+  slot: TimeSlot;
+  onClick: () => void;
 }
 
 export function ScheduleSlot({ slot, onClick }: ScheduleSlotProps) {
   const statusConfig = {
     available: {
-      bg: 'bg-card',
-      border: 'border-border',
-      text: 'text-muted-foreground',
-      label: 'Свободно',
+      bg: "bg-card",
+      border: "border-border",
+      badgeBg: "bg-muted",
+      badgeText: "text-muted-foreground",
+      label: "Свободно",
     },
     booked: {
-      bg: 'bg-success/20',
-      border: 'border-success',
-      text: 'text-success-foreground',
-      label: 'Занято',
+      bg: "bg-green-50",
+      border: "border-green-200",
+      badgeBg: "bg-green-100",
+      badgeText: "text-green-700",
+      label: "Занято",
     },
     pending: {
-      bg: 'bg-warning/20',
-      border: 'border-warning',
-      text: 'text-warning-foreground',
-      label: 'Ожидает подтверждения',
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      badgeBg: "bg-amber-100",
+      badgeText: "text-amber-700",
+      label: "Ожидание",
     },
-    'awaiting-payment': {
-      bg: 'bg-muted',
-      border: 'border-border',
-      text: 'text-muted-foreground',
-      label: 'Ожидает оплаты',
+    "awaiting-payment": {
+      bg: "bg-orange-50",
+      border: "border-orange-200",
+      badgeBg: "bg-orange-100",
+      badgeText: "text-orange-700",
+      label: "Ожидает оплаты",
     },
-  }
+  };
 
-  const config = statusConfig[slot.status]
+  const config = statusConfig[slot.status];
+  const isOccupied = slot.status !== "available";
 
   return (
     <button
       onClick={onClick}
-      disabled={slot.status === 'available'}
-      className={`w-full p-4 rounded-lg border ${config.bg} ${config.border} text-left ${
-        slot.status !== 'available' ? 'cursor-pointer hover:opacity-80' : 'cursor-default'
-      } transition-opacity`}
+      className={`w-full rounded-lg border ${config.bg} ${
+        config.border
+      } text-left cursor-pointer hover:shadow-md transition-shadow ${
+        isOccupied ? "h-[90px]" : "h-[56px]"
+      }`}
     >
-      <div className="flex items-center justify-between mb-1">
-        <span className="font-semibold">
+      {/* Зона 1: Время и Статус */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <span className="font-semibold text-base w-[120px]">
           {slot.startTime}–{slot.endTime}
         </span>
-        <span className={`text-sm ${config.text}`}>{config.label}</span>
+        <span
+          className={`text-xs font-medium px-3 py-1 rounded-full ${config.badgeBg} ${config.badgeText}`}
+        >
+          {config.label}
+        </span>
       </div>
-      {slot.clientName && (
-        <p className="text-sm font-medium mt-2">{slot.clientName}</p>
+
+      {/* Зона 2: Имя клиента (только для занятых) */}
+      {isOccupied && slot.clientName && (
+        <div className="px-4 pb-3">
+          <p className="text-sm font-medium text-foreground">
+            {slot.clientName}
+          </p>
+        </div>
       )}
     </button>
-  )
+  );
 }

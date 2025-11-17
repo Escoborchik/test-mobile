@@ -1,143 +1,172 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { ChevronDown, Filter } from 'lucide-react'
-import { AdminBookingCard } from './admin-booking-card'
-import { AdminBookingDetailSheet } from './admin-booking-detail-sheet'
-import { DatePickerModal } from '@/components/date-picker-modal'
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { AdminBookingCard } from "./admin-booking-card";
+import { AdminBookingDetailSheet } from "./admin-booking-detail-sheet";
 
 interface Booking {
-  id: string
-  clientName: string
-  clientPhone: string
-  clientEmail: string
-  courtName: string
-  courtType: string
-  courtSurface: string
-  sport: string
-  isIndoor: boolean
-  address: string
-  date: string
-  time: string
-  price: number
-  status: 'pending' | 'confirmed'
-  isRecurring: boolean
+  id: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail: string;
+  courtName: string;
+  courtType: string;
+  courtSurface: string;
+  sport: string;
+  isIndoor: boolean;
+  address: string;
+  date: string;
+  time: string;
+  price: number;
+  status: "pending" | "confirmed";
+  isRecurring: boolean;
   recurringDetails?: {
-    startDate: string
-    endDate: string
-    daysOfWeek: string[]
-    totalSessions: number
-    remainingSessions: number
-    totalAmount: number
-  }
+    startDate: string;
+    endDate: string;
+    daysOfWeek: string[];
+    totalSessions: number;
+    remainingSessions: number;
+    totalAmount: number;
+  };
 }
 
 export function AdminBookingsSection() {
-  const [activeTab, setActiveTab] = useState<'pending' | 'confirmed'>('pending')
-  const [showDatePicker, setShowDatePicker] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [selectedCourt, setSelectedCourt] = useState('all')
-  const [showCourtFilter, setShowCourtFilter] = useState(false)
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [activeTab, setActiveTab] = useState<"pending" | "confirmed">(
+    "pending"
+  );
+  const [selectedCourt, setSelectedCourt] = useState("all");
+  const [showCourtFilter, setShowCourtFilter] = useState(false);
+  const [selectedBookingType, setSelectedBookingType] = useState<
+    "all" | "single" | "subscription"
+  >("all");
+  const [showBookingTypeFilter, setShowBookingTypeFilter] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const courts = ['all', 'Корт №1', 'Корт №2', 'Корт №3']
+  const courts = ["all", "Корт №1", "Корт №2", "Корт №3"];
+  const bookingTypes = [
+    { value: "all", label: "Все типы" },
+    { value: "single", label: "Разовое" },
+    { value: "subscription", label: "Абонемент" },
+  ];
 
   const bookings: Booking[] = [
     {
-      id: '1',
-      clientName: 'Иван Иванов',
-      clientPhone: '+7 (900) 123-45-67',
-      clientEmail: 'ivan@example.com',
-      courtName: 'Корт №1',
-      courtType: 'Открытый',
-      courtSurface: 'Хард',
-      sport: 'Теннис',
+      id: "1",
+      clientName: "Иван Иванов",
+      clientPhone: "+7 (900) 123-45-67",
+      clientEmail: "ivan@example.com",
+      courtName: "Корт №1",
+      courtType: "Открытый",
+      courtSurface: "Хард",
+      sport: "Теннис",
       isIndoor: false,
-      address: 'ул. Спортивная, 12',
-      date: '15 янв 2025',
-      time: '10:00–11:00',
+      address: "ул. Спортивная, 12",
+      date: "15 янв 2025",
+      time: "10:00–11:00",
       price: 2000,
-      status: 'pending',
+      status: "pending",
       isRecurring: false,
     },
     {
-      id: '2',
-      clientName: 'Мария Петрова',
-      clientPhone: '+7 (900) 234-56-78',
-      clientEmail: 'maria@example.com',
-      courtName: 'Корт №2',
-      courtType: 'Закрытый',
-      courtSurface: 'Грунт',
-      sport: 'Теннис',
+      id: "2",
+      clientName: "Мария Петрова",
+      clientPhone: "+7 (900) 234-56-78",
+      clientEmail: "maria@example.com",
+      courtName: "Корт №2",
+      courtType: "Закрытый",
+      courtSurface: "Грунт",
+      sport: "Теннис",
       isIndoor: true,
-      address: 'пр. Ленина, 45',
-      date: '16 янв 2025',
-      time: '14:00–15:00',
+      address: "пр. Ленина, 45",
+      date: "16 янв 2025",
+      time: "14:00–15:00",
       price: 2500,
-      status: 'pending',
+      status: "pending",
       isRecurring: true,
       recurringDetails: {
-        startDate: '16 янв 2025',
-        endDate: '16 фев 2025',
-        daysOfWeek: ['Понедельник', 'Среда', 'Пятница'],
+        startDate: "16 янв 2025",
+        endDate: "16 фев 2025",
+        daysOfWeek: ["Понедельник", "Среда", "Пятница"],
         totalSessions: 12,
         remainingSessions: 12,
         totalAmount: 30000,
       },
     },
     {
-      id: '3',
-      clientName: 'Алексей Сидоров',
-      clientPhone: '+7 (900) 345-67-89',
-      clientEmail: 'alex@example.com',
-      courtName: 'Корт №1',
-      courtType: 'Открытый',
-      courtSurface: 'Хард',
-      sport: 'Теннис',
+      id: "3",
+      clientName: "Алексей Сидоров",
+      clientPhone: "+7 (900) 345-67-89",
+      clientEmail: "alex@example.com",
+      courtName: "Корт №1",
+      courtType: "Открытый",
+      courtSurface: "Хард",
+      sport: "Теннис",
       isIndoor: false,
-      address: 'ул. Спортивная, 12',
-      date: '17 янв 2025',
-      time: '18:00–19:00',
+      address: "ул. Спортивная, 12",
+      date: "17 янв 2025",
+      time: "18:00–19:00",
       price: 2200,
-      status: 'confirmed',
+      status: "confirmed",
       isRecurring: false,
     },
-  ]
+  ];
 
-  const pendingBookings = bookings.filter((b) => b.status === 'pending')
-  const confirmedBookings = bookings.filter((b) => b.status === 'confirmed')
-  const displayedBookings = activeTab === 'pending' ? pendingBookings : confirmedBookings
+  const pendingBookings = bookings.filter((b) => b.status === "pending");
+  const confirmedBookings = bookings.filter((b) => b.status === "confirmed");
+
+  let displayedBookings =
+    activeTab === "pending" ? pendingBookings : confirmedBookings;
+
+  // Filter by booking type
+  if (selectedBookingType !== "all") {
+    displayedBookings = displayedBookings.filter((b) => {
+      if (selectedBookingType === "single") {
+        return !b.isRecurring;
+      } else if (selectedBookingType === "subscription") {
+        return b.isRecurring;
+      }
+      return true;
+    });
+  }
+
+  // Filter by court
+  if (selectedCourt !== "all") {
+    displayedBookings = displayedBookings.filter(
+      (b) => b.courtName === selectedCourt
+    );
+  }
 
   const handleConfirm = (id: string) => {
-    console.log('[v0] Confirming booking:', id)
+    console.log("[v0] Confirming booking:", id);
     // Toast notification would be shown here
-  }
+  };
 
   const handleReject = (id: string) => {
-    console.log('[v0] Rejecting booking:', id)
+    console.log("[v0] Rejecting booking:", id);
     // Toast notification would be shown here
-  }
+  };
 
   return (
     <div className="pb-4">
       {/* Tabs */}
-      <div className="flex gap-2 px-4 py-4 border-b border-border bg-card">
+      <div className="flex gap-2 px-4 py-3 bg-white border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('pending')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            activeTab === 'pending'
-              ? 'bg-warning text-warning-foreground'
-              : 'bg-muted text-muted-foreground'
+          onClick={() => setActiveTab("pending")}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            activeTab === "pending"
+              ? "bg-emerald-700 text-white shadow-sm"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }`}
         >
           Ожидающие ({pendingBookings.length})
         </button>
         <button
-          onClick={() => setActiveTab('confirmed')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            activeTab === 'confirmed'
-              ? 'bg-success text-success-foreground'
-              : 'bg-muted text-muted-foreground'
+          onClick={() => setActiveTab("confirmed")}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            activeTab === "confirmed"
+              ? "bg-emerald-700 text-white shadow-sm"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }`}
         >
           Подтверждённые
@@ -146,23 +175,13 @@ export function AdminBookingsSection() {
 
       {/* Filters */}
       <div className="flex gap-2 px-4 py-4 bg-muted/50">
-        <button
-          onClick={() => setShowDatePicker(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-card rounded-lg border border-border"
-        >
-          <span className="text-sm">
-            {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-          </span>
-          <ChevronDown className="w-4 h-4" />
-        </button>
-
         <div className="relative">
           <button
             onClick={() => setShowCourtFilter(!showCourtFilter)}
             className="flex items-center gap-2 px-4 py-2 bg-card rounded-lg border border-border"
           >
             <span className="text-sm">
-              {selectedCourt === 'all' ? 'Все корты' : selectedCourt}
+              {selectedCourt === "all" ? "Все корты" : selectedCourt}
             </span>
             <ChevronDown className="w-4 h-4" />
           </button>
@@ -173,12 +192,43 @@ export function AdminBookingsSection() {
                 <button
                   key={court}
                   onClick={() => {
-                    setSelectedCourt(court)
-                    setShowCourtFilter(false)
+                    setSelectedCourt(court);
+                    setShowCourtFilter(false);
                   }}
                   className="block w-full text-left px-4 py-2 hover:bg-muted text-sm"
                 >
-                  {court === 'all' ? 'Все корты' : court}
+                  {court === "all" ? "Все корты" : court}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowBookingTypeFilter(!showBookingTypeFilter)}
+            className="flex items-center gap-2 px-4 py-2 bg-card rounded-lg border border-border"
+          >
+            <span className="text-sm">
+              {bookingTypes.find((t) => t.value === selectedBookingType)?.label}
+            </span>
+            <ChevronDown className="w-4 h-4" />
+          </button>
+
+          {showBookingTypeFilter && (
+            <div className="absolute top-full left-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border z-10">
+              {bookingTypes.map((type) => (
+                <button
+                  key={type.value}
+                  onClick={() => {
+                    setSelectedBookingType(
+                      type.value as "all" | "single" | "subscription"
+                    );
+                    setShowBookingTypeFilter(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 hover:bg-muted text-sm"
+                >
+                  {type.label}
                 </button>
               ))}
             </div>
@@ -187,10 +237,13 @@ export function AdminBookingsSection() {
       </div>
 
       {/* Bookings List */}
-      <div className="px-4 space-y-3">
+      <div className="px-4 py-4 space-y-3 bg-gray-50">
         {displayedBookings.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Нет {activeTab === 'pending' ? 'ожидающих' : 'подтверждённых'} бронирований</p>
+            <p className="text-muted-foreground">
+              Нет {activeTab === "pending" ? "ожидающих" : "подтверждённых"}{" "}
+              бронирований
+            </p>
           </div>
         ) : (
           displayedBookings.map((booking) => (
@@ -205,17 +258,6 @@ export function AdminBookingsSection() {
         )}
       </div>
 
-      {/* Date Picker Modal */}
-      <DatePickerModal
-        open={showDatePicker}
-        onClose={() => setShowDatePicker(false)}
-        selectedDate={selectedDate}
-        onSelectDate={(date) => {
-          setSelectedDate(date)
-          setShowDatePicker(false)
-        }}
-      />
-
       {/* Booking Detail Sheet */}
       {selectedBooking && (
         <AdminBookingDetailSheet
@@ -226,5 +268,5 @@ export function AdminBookingsSection() {
         />
       )}
     </div>
-  )
+  );
 }
