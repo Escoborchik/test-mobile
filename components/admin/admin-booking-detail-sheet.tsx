@@ -19,6 +19,11 @@ interface Booking {
   price: number;
   status: "pending" | "confirmed";
   isRecurring: boolean;
+  tariffType?: string;
+  additionalServices?: {
+    name: string;
+    price: number;
+  }[];
   recurringDetails?: {
     startDate: string;
     endDate: string;
@@ -153,30 +158,53 @@ export function AdminBookingDetailSheet({
             </h3>
             <div className="space-y-2 bg-muted/50 p-4 rounded-lg">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Дата и время</span>
+                <span className="text-muted-foreground">Тариф</span>
                 <span className="font-medium">
-                  {booking.date} • {booking.time}
+                  {booking.isRecurring
+                    ? "абонемент"
+                    : booking.tariffType || "разовый"}
                 </span>
               </div>
+
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Цена</span>
+                <span className="text-muted-foreground">Цена за 1 занятие</span>
                 <span className="font-semibold text-accent">
                   {booking.price} ₽
                 </span>
               </div>
 
-              {booking.isRecurring && booking.recurringDetails && (
+              {booking.isRecurring && booking.recurringDetails ? (
                 <>
-                  <div className="border-t border-border my-2 pt-2">
-                    <p className="text-sm font-medium mb-2">Абонемент</p>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Дата начала</span>
+                    <span className="font-medium">
+                      {booking.recurringDetails.startDate}
+                    </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Период</span>
-                    <span>
-                      {booking.recurringDetails.startDate} –{" "}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Дата окончания
+                    </span>
+                    <span className="font-medium">
                       {booking.recurringDetails.endDate}
                     </span>
                   </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Дата</span>
+                    <span className="font-medium">{booking.date}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Время</span>
+                    <span className="font-medium">{booking.time}</span>
+                  </div>
+                </>
+              )}
+
+              {booking.isRecurring && booking.recurringDetails && (
+                <>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Дни недели</span>
                     <span>
@@ -193,14 +221,49 @@ export function AdminBookingDetailSheet({
                     </span>
                     <span>{booking.recurringDetails.remainingSessions}</span>
                   </div>
-                  <div className="flex justify-between font-semibold">
-                    <span>Итоговая сумма</span>
-                    <span className="text-accent">
-                      {booking.recurringDetails.totalAmount} ₽
-                    </span>
-                  </div>
                 </>
               )}
+            </div>
+          </div>
+
+          {/* Additional Services */}
+          <div>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+              Доп услуги
+            </h3>
+            <div className="space-y-2 bg-muted/50 p-4 rounded-lg">
+              {booking.additionalServices &&
+              booking.additionalServices.length > 0 ? (
+                booking.additionalServices.map((service, index) => (
+                  <div key={index} className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {service.name}
+                    </span>
+                    <span className="font-medium">{service.price} ₽</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-center">
+                  Доп услуг нет
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Total Amount */}
+          <div className="bg-muted/50 p-4 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold">Итоговая сумма</span>
+              <span className="text-xl font-bold text-accent">
+                {booking.isRecurring && booking.recurringDetails
+                  ? booking.recurringDetails.totalAmount
+                  : booking.price +
+                    (booking.additionalServices?.reduce(
+                      (sum, service) => sum + service.price,
+                      0
+                    ) || 0)}{" "}
+                ₽
+              </span>
             </div>
           </div>
         </div>

@@ -38,24 +38,24 @@ export function AdminScheduleSection() {
   const courts = [
     {
       name: "Корт №1",
-      type: "Открытый",
+      type: "Закрытый",
       surface: "Хард",
-      address: "ул. Спортивная, 12",
+      address: "Сибирский тракт, 34Б",
       sport: "Теннис",
     },
     {
       name: "Корт №2",
       type: "Закрытый",
-      surface: "Грунт",
-      address: "пр. Ленина, 45",
+      surface: "Хард",
+      address: "Сибирский тракт, 34Б",
       sport: "Теннис",
     },
     {
       name: "Корт №3",
-      type: "Открытый",
-      surface: "Трава",
-      address: "ул. Парковая, 8",
-      sport: "Падел",
+      type: "Закрытый",
+      surface: "Хард",
+      address: "Сибирский тракт, 34Б",
+      sport: "Теннис",
     },
   ];
 
